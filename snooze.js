@@ -125,7 +125,7 @@ function __moveEmailsToInbox(labelName) {
 		threads = label.getThreads(0, 100);
 
 		if (threads.length == 0)
-			return;
+			break;
 		 
 		GmailApp.moveThreadsToInbox(threads);
 
@@ -153,7 +153,7 @@ function cleanLabels() {
 			threads = label.getThreads(0, 100);
 			
 			if (threads.length == 0)
-				return;
+				break;
 			
 			GmailApp.markThreadsRead(threads);
 		GmailApp.moveThreadsToArchive(threads);
