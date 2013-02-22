@@ -9,8 +9,8 @@
  * e-mails marked by one of the labels from inbox and bring them back later at a
  * predefined time. It was inspired by the Mailbox application for iPhone.
  *
- * How to install
- * ==============
+ * Installation
+ * ============
  *
  * 1. Login to your Google Drive
  * 2. Create a new script
@@ -25,21 +25,32 @@
  *	    - runSaturday - Time-driven - Week timer - Every saturday at 6:00 - 7:00
  * 7. Authorize the script and grant access to Gmail
  *
- * How to customize
- * ==============
+ * Customization
+ * =============
  *
  * You can change names of the labels as well as times at which events are fired.
  * To do that just edit the coresponing parameters in the SETUP section of the
  * script. You can also disable marking e-mail as unread after they are moved back
  * into inbox. To do that just set the markUnread parameter to false.
  *
- * How to use
- * ==========
+ * Usage
+ * =====
  *
  * When you want to snooze an email for one day, just mark it with label Tomorrow.
  * After one minute it will be removed from your Inbox and marked as read. The next
  * in the morning (at the time of you choosing), this script will bring this e-mail
  * back to your inbox and mark it as unread.
+ *
+ * Troubleshooting
+ * ===============
+ *
+ * Sometimes you will receive an e-mail from Google saying that there was and error
+ * running function cleanLabels and that it could not connect to Gmail. This is normal
+ * so there is nothing to worry about. There is a backoff function implemented which
+ * tries to connect several times in a row for about 30 seconds, but sometimes the
+ * connection is refused by Gmail for a longer period of time. If you do not want to
+ * receive these e-mails, you can turn them off in a Triggers for current project
+ * window (click on a notifications link under the cleanLabels trigger).
  *
  * Licence
  * =======
@@ -110,6 +121,27 @@ function Install() {
 	ScriptApp.newTrigger("runSaturday").timeBased().onWeekDay(ScriptApp.WeekDay.SATURDAY).atHour(SETUP.hours.saturday).create();
 }
 
+function __getLabelWithBackoff(labelName) {
+	/**
+	 * Returns label, if connection fails retries with delays of approximately
+	 * 2, 4, 8 and 16 seconds for a total of about 30 seconds before it gives up
+	 * and rethrows the last error.
+	 *
+	 * @param labelName Second part of the labels name
+	 * @access private
+	 **/
+	for (var i = 1; i < 6; n++)
+		try {
+			return GmailApp.getUserLabelByName(SETUP.groupingLabel + '/' + labelName);
+		}
+		catch (e) {
+			if (n == 5)
+				throw e;
+
+			Thread.sleep((Math.pow(2, n) * 1000) + (Math.round(Math.random() * 1000)));
+		}
+}
+
 function __moveEmailsToInbox(labelName) {
 	/**
 	 * Moves messages from label <labelName> back into Inbox
@@ -117,9 +149,10 @@ function __moveEmailsToInbox(labelName) {
 	 * @param labelName Second part of the labels name
 	 * @access private
 	 **/
-	var label = GmailApp.getUserLabelByName(SETUP.groupingLabel + '/' + labelName);
-	var threads = null;
 	
+	var label = __getLabelWithBackoff(labelName);
+	var threads = null;
+
 	// Get threads 100 at a time
 	while (!threads || threads.length == 100) {
 		threads = label.getThreads(0, 100);
@@ -145,7 +178,7 @@ function cleanLabels() {
 	 * @access public
 	 **/
 	for (var i in SETUP.labels) {
-		var label = GmailApp.getUserLabelByName(SETUP.groupingLabel + '/' + SETUP.labels[i]);
+		var label = __getLabelWithBackoff(SETUP.labels[i]);
 		var threads = null;
 
 		// Get threads 100 at a time
