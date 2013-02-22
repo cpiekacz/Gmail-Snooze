@@ -111,8 +111,8 @@ function Install() {
 	
 	// Delete all current script triggers
 	var triggers = ScriptApp.getScriptTriggers();
-	for (var i in SETUP.triggers)
-		ScriptApp.deleteTrigger(SETUP.triggers[i]);
+	for (var i in triggers)
+		ScriptApp.deleteTrigger(triggers[i]);
 	
 	// Create script triggers
 	ScriptApp.newTrigger("cleanLabels").timeBased().everyMinutes(1).create();
