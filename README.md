@@ -3,8 +3,8 @@ Gmail Snooze
 
 Gmail Snooze is a [Google Apps Script](https://developers.google.com/apps-script/) which allows e-mail snoozing. It removes e-mails marked by one of the labels from inbox and bring them back later at a predefined time. It was inspired by the [Mailbox](http://www.mailboxapp.com) application for iPhone.
 
-Instalation
------------
+Installation
+------------
 
 1. Login to your [Google Drive](http://drive.google.com)
 2. Create a new script
